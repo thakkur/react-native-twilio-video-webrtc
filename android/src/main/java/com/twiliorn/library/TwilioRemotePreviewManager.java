@@ -7,7 +7,7 @@
 
 package com.twiliorn.library;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Log;
 
 import com.facebook.react.common.MapBuilder;
@@ -50,6 +50,10 @@ public class TwilioRemotePreviewManager extends SimpleViewManager<TwilioRemotePr
         CustomTwilioVideoView.registerPrimaryVideoView(view.getSurfaceViewRenderer(), trackSid);
     }
 
+    @ReactProp(name = "applyZOrder", defaultBoolean = false)
+    public void setApplyZOrder(TwilioRemotePreview view, boolean applyZOrder) {
+      view.applyZOrder(applyZOrder);
+    }
 
     @Override
     protected TwilioRemotePreview createViewInstance(ThemedReactContext reactContext) {

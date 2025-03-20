@@ -14,12 +14,22 @@ declare module "react-native-twilio-video-webrtc" {
     trackIdentifier: TrackIdentifier;
     ref?: React.Ref<any>;
     scaleType?: scaleType;
+    /**
+     * Whether to apply Z ordering to this view.  Setting this to true will cause
+     * this view to appear above other Twilio Video views. 
+     */
+     applyZOrder?: boolean | undefined;
   }
 
   interface TwilioVideoLocalViewProps extends ViewProps {
     enabled: boolean;
     ref?: React.Ref<any>;
     scaleType?: scaleType;
+    /**
+     * Whether to apply Z ordering to this view.  Setting this to true will cause
+     * this view to appear above other Twilio Video views. 
+     */
+    applyZOrder?: boolean | undefined;
   }
 
   interface Participant {
@@ -84,6 +94,12 @@ declare module "react-native-twilio-video-webrtc" {
   
   export type DominantSpeakerChangedCb = (d: DominantSpeakerChangedEventArgs) => void;
 
+  export type LocalParticipantSupportedCodecsCbEventArgs = {
+    supportedCodecs: Array<string>;
+  }
+
+  export type LocalParticipantSupportedCodecsCb = (d: LocalParticipantSupportedCodecsCbEventArgs) => void;
+
   export type TwilioVideoProps = ViewProps & {
     onCameraDidStart?: () => void;
     onCameraDidStopRunning?: (err: any) => void;
@@ -105,11 +121,10 @@ declare module "react-native-twilio-video-webrtc" {
     onRoomParticipantDidConnect?: ParticipantEventCb;
     onRoomParticipantDidDisconnect?: ParticipantEventCb;
     onNetworkQualityLevelsChanged?: NetworkLevelChangeEventCb;
+    onLocalParticipantSupportedCodecs?: LocalParticipantSupportedCodecsCb;
 
     onStatsReceived?: (data: any) => void;
     onDataTrackMessageReceived?: DataTrackEventCb;
-    onRecordingStarted?: () => void;
-    onRecordingStopped?: () => void;
     // iOS only
     autoInitializeCamera?: boolean;    
     ref?: React.Ref<any>;
@@ -139,6 +154,9 @@ declare module "react-native-twilio-video-webrtc" {
     enableAudio?: boolean;
     enableVideo?: boolean;
     enableRemoteAudio?: boolean;
+    encodingParameters?: {
+      enableH264Codec?: boolean;
+    };
     enableNetworkQualityReporting?: boolean;
     maintainVideoTrackInBackground?: boolean;
   };
@@ -158,7 +176,6 @@ declare module "react-native-twilio-video-webrtc" {
     publishLocalVideo: () => void;
     unpublishLocalVideo: () => void;
     sendString: (message: string) => void;
-    isRecording: () => Promise<boolean>;
   }
 
   class TwilioVideoLocalView extends React.Component<

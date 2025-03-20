@@ -13,13 +13,10 @@ import {
   View,
   findNodeHandle,
   requireNativeComponent,
-  NativeModules,
 } from "react-native";
 import React, { Component } from "react";
 
 import PropTypes from "prop-types";
-
-const TwilioVideoManager = NativeModules.TwilioVideoModule;
 
 const propTypes = {
   ...View.propTypes,
@@ -149,13 +146,9 @@ const propTypes = {
    */
   onDominantSpeakerDidChange: PropTypes.func,
   /**
-   * This method is only called when a Room which was not previously recording starts recording.
+   * Callback that is called after determining what codecs are supported
    */
-  onRecordingStarted: PropTypes.func,
-  /**
-   * This method is only called when a Room which was previously recording stops recording.
-   */
-  onRecordingStopped: PropTypes.func,
+  onLocalParticipantSupportedCodecs: PropTypes.func,
 };
 
 const nativeEvents = {
@@ -173,22 +166,10 @@ const nativeEvents = {
   sendString: 12,
   publishVideo: 13,
   publishAudio: 14,
+  setRemoteAudioPlayback: 15,
 };
 
 class CustomTwilioVideoView extends Component {
-  _videoRef = null;
-  _videoHandle = null;
-
-  setRef = (ref) => {
-    if (ref) {
-      this._videoRef = ref;
-      this._videoHandle = findNodeHandle(ref);
-    } else {
-      this._videoRef = null;
-      this._videoHandle = null;
-    }
-  };
-
   connect({
     roomName,
     accessToken,
@@ -199,6 +180,7 @@ class CustomTwilioVideoView extends Component {
     enableNetworkQualityReporting = false,
     dominantSpeakerEnabled = false,
     maintainVideoTrackInBackground = false,
+    encodingParameters = {},
   }) {
     this.runCommand(nativeEvents.connectToRoom, [
       roomName,
@@ -210,6 +192,7 @@ class CustomTwilioVideoView extends Component {
       dominantSpeakerEnabled,
       maintainVideoTrackInBackground,
       cameraType,
+      encodingParameters,
     ]);
   }
 
@@ -265,6 +248,13 @@ class CustomTwilioVideoView extends Component {
     return Promise.resolve(enabled);
   }
 
+  setRemoteAudioPlayback({ participantSid, enabled }) {
+    this.runCommand(nativeEvents.setRemoteAudioPlayback, [
+      participantSid,
+      enabled,
+    ]);
+  }
+
   getStats() {
     this.runCommand(nativeEvents.getStats, []);
   }
@@ -281,7 +271,7 @@ class CustomTwilioVideoView extends Component {
     switch (Platform.OS) {
       case "android":
         UIManager.dispatchViewManagerCommand(
-          findNodeHandle(this._videoHandle),
+          findNodeHandle(this.refs.videoView),
           event,
           args
         );
@@ -315,8 +305,7 @@ class CustomTwilioVideoView extends Component {
       "onStatsReceived",
       "onNetworkQualityLevelsChanged",
       "onDominantSpeakerDidChange",
-      "onRecordingStarted",
-      "onRecordingStopped",
+      "onLocalParticipantSupportedCodecs",
     ].reduce((wrappedEvents, eventName) => {
       if (this.props[eventName]) {
         return {
@@ -328,18 +317,10 @@ class CustomTwilioVideoView extends Component {
     }, {});
   }
 
-  isRecording() {
-    if (!TwilioVideoManager) {
-      throw new Error("TwilioVideoManager not found");
-    }
-
-    return TwilioVideoManager.isRecording(this._videoHandle);
-  }
-
   render() {
     return (
       <NativeCustomTwilioVideoView
-        ref={this.setRef}
+        ref="videoView"
         {...this.props}
         {...this.buildNativeEventWrappers()}
       />

@@ -20,10 +20,8 @@ import java.util.List;
 
 public class TwilioPackage implements ReactPackage {
     @Override
-    public List<NativeModule> createNativeModules(ReactApplicationContext reactApplicationContext) {
-        return Arrays.<NativeModule>asList(
-          new TwilioVideoModule(reactApplicationContext)
-        );
+    public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
+        return Collections.emptyList();
     }
 
     // Deprecated by RN 0.47
